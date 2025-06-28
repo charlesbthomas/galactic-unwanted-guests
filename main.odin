@@ -6,6 +6,17 @@ import "core:strings"
 import rl "vendor:raylib"
 
 Vec2 :: [2]f32
+Entity :: struct {
+	pos: Vec2,
+	tex: rl.Texture,
+}
+World :: struct {
+	entities: [dynamic]Entity,
+}
+
+add_entity :: proc(world: ^World, e: Entity) {
+	append(&world.entities, e)
+}
 
 textures: map[string]rl.Texture
 
@@ -26,6 +37,7 @@ load_texture :: proc(path: string) -> rl.Texture {
 main :: proc() {
 	rl.InitWindow(1280, 720, "Galactic Unwanted Guests")
 
+	world: World
 	player := load_texture("player.png")
 	player_pos: Vec2
 
@@ -50,8 +62,14 @@ main :: proc() {
 
 		rl.BeginDrawing()
 		rl.ClearBackground({160, 200, 255, 255})
+
+		for e in world.entities {
+			// Draw each entity
+			rl.DrawTextureV(e.tex, e.pos, rl.WHITE)
+		}
 		rl.DrawTextureV(player, player_pos, rl.WHITE)
 		rl.EndDrawing()
+		free_all(context.temp_allocator)
 	}
 
 	rl.CloseWindow()
