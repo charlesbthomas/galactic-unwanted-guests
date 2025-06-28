@@ -2,14 +2,31 @@ package game
 
 import "core:fmt"
 import la "core:math/linalg"
+import "core:strings"
 import rl "vendor:raylib"
 
 Vec2 :: [2]f32
 
+textures: map[string]rl.Texture
+
+load_texture :: proc(path: string) -> rl.Texture {
+	if cached, ok := textures[path]; ok {
+		return cached
+	}
+
+	loaded := rl.LoadTexture(strings.clone_to_cstring(path, context.temp_allocator))
+
+	if loaded.id != 0 {
+		textures[path] = loaded
+	}
+
+	return loaded
+}
+
 main :: proc() {
 	rl.InitWindow(1280, 720, "Galactic Unwanted Guests")
 
-	player := rl.LoadTexture("player.png")
+	player := load_texture("player.png")
 	player_pos: Vec2
 
 	for !rl.WindowShouldClose() {
