@@ -98,7 +98,7 @@ ray_aabb_intersect :: proc(
 	return true, tmin
 }
 
-NUM_RAYS :: 36
+NUM_RAYS :: 100
 RAY_LENGTH :: 400
 
 main :: proc() {
@@ -110,11 +110,18 @@ main :: proc() {
 	player_pos: Vec2
 
 
-	box := Entity {
-		pos      = Vec2{100, 100},
-		collider = &RectCollider{pos = Vec2{0, 0}, width = 50, height = 50},
+	// add 4 boxes to the world
+	for i in 0 ..< 4 {
+		pos := Vec2{f32(i * 100 + 200), f32(i * 100 + 200)}
+		box := Entity {
+			pos      = pos,
+			collider = &RectCollider{pos = Vec2{0, 0}, width = 50, height = 50},
+		}
+
+
+		add_entity(&world, box)
 	}
-	add_entity(&world, box)
+
 
 	for !rl.WindowShouldClose() {
 		origin := rl.GetMousePosition()
