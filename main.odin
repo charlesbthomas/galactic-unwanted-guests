@@ -2,7 +2,7 @@ package game
 
 import "core:fmt"
 import "core:math"
-import la "core:math/linalg"
+import "core:math/linalg"
 import "core:strings"
 import rl "vendor:raylib"
 
@@ -13,6 +13,7 @@ RectCollider :: struct {
 }
 
 Vec2 :: [2]f32
+
 Entity :: struct {
 	pos:      Vec2,
 	tex:      rl.Texture,
@@ -139,7 +140,7 @@ main :: proc() {
 		case .RIGHT:
 			input.x += 1
 		}
-		player_pos += la.normalize0(input) * rl.GetFrameTime() * 2000
+		player_pos += linalg.normalize0(input) * rl.GetFrameTime() * 2000
 
 		fmt.printf("Player position: %v\n", player_pos)
 		fmt.printf("Input: %v\n", input)
