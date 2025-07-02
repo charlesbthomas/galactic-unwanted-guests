@@ -7,7 +7,7 @@ import "core:strings"
 import rl "vendor:raylib"
 
 RectCollider :: struct {
-	pos:    Vec2,
+	offset: Vec2, // Offset from the owner's position
 	height: f32,
 	width:  f32,
 }
@@ -15,9 +15,10 @@ RectCollider :: struct {
 Vec2 :: [2]f32
 
 Entity :: struct {
-	pos:      Vec2,
-	tex:      rl.Texture,
-	collider: ^RectCollider,
+	is_player: bool,
+	pos:       Vec2,
+	tex:       rl.Texture,
+	collider:  ^RectCollider,
 }
 World :: struct {
 	entities: [dynamic]Entity,
@@ -25,10 +26,11 @@ World :: struct {
 
 
 get_rect_bounds :: proc(pos: Vec2, collider: RectCollider) -> (min: Vec2, max: Vec2) {
+	center := pos + collider.offset
 	return Vec2 {
-		pos.x - collider.width / 2,
-		pos.y - collider.height / 2,
-	}, Vec2{pos.x + collider.width / 2, pos.y + collider.height / 2}
+		center.x - collider.width / 2,
+		center.y - collider.height / 2,
+	}, Vec2{center.x + collider.width / 2, center.y + collider.height / 2}
 }
 
 aabb_intersect :: proc(a_pos: Vec2, a: RectCollider, b_pos: Vec2, b: RectCollider) -> bool {
@@ -103,20 +105,25 @@ NUM_RAYS :: 100
 RAY_LENGTH :: 400
 
 main :: proc() {
-	rl.InitWindow(1280, 720, "Galactic Unwanted Guests")
+	rl.InitWindow(1280, 720, "Raycasting Fun")
 	rl.SetTargetFPS(60)
 
 	world: World
-	player := load_texture("player.png")
-	player_pos: Vec2
 
+	player_entity := Entity {
+		is_player = true,
+		pos       = Vec2{200, 200},
+		tex       = load_texture("player.png"),
+		collider  = &RectCollider{offset = Vec2{30, 36}, width = 65, height = 73},
+	}
+	add_entity(&world, player_entity)
 
 	// add 4 boxes to the world
 	for i in 0 ..< 4 {
 		pos := Vec2{f32(i * 100 + 200), f32(i * 100 + 200)}
 		box := Entity {
 			pos      = pos,
-			collider = &RectCollider{pos = Vec2{0, 0}, width = 50, height = 50},
+			collider = &RectCollider{offset = Vec2{0, 0}, width = 50, height = 50},
 		}
 
 
@@ -140,10 +147,15 @@ main :: proc() {
 		case .RIGHT:
 			input.x += 1
 		}
-		player_pos += linalg.normalize0(input) * rl.GetFrameTime() * 2000
 
-		fmt.printf("Player position: %v\n", player_pos)
-		fmt.printf("Input: %v\n", input)
+		for &e in world.entities {
+
+			if e.is_player {
+				e.pos += linalg.normalize0(input) * rl.GetFrameTime() * 2000
+				continue
+			}
+		}
+
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
@@ -157,7 +169,6 @@ main :: proc() {
 				draw_rect_collider(e.pos, e.collider^)
 			}
 		}
-		rl.DrawTextureV(player, player_pos, rl.WHITE)
 
 		for i in 0 ..< NUM_RAYS {
 			angle := (2.0 * math.PI) * f32(i) / f32(NUM_RAYS)
