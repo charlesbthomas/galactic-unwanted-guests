@@ -6,6 +6,8 @@ import "core:math/linalg"
 import "core:strings"
 import rl "vendor:raylib"
 
+DEBUG :: true
+
 RectCollider :: struct {
 	offset: Vec2, // Offset from the owner's position
 	height: f32,
@@ -162,10 +164,8 @@ main :: proc() {
 
 
 		for e in world.entities {
-			// Draw each entity
 			rl.DrawTextureV(e.tex, e.pos, rl.WHITE)
-
-			if e.collider != nil {
+			if e.collider != nil && DEBUG {
 				draw_rect_collider(e.pos, e.collider^)
 			}
 		}
