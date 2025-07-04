@@ -6,7 +6,6 @@ import "core:math/linalg"
 import "core:strings"
 import rl "vendor:raylib"
 
-
 textures: map[string]rl.Texture
 load_texture :: proc(path: string) -> rl.Texture {
     if cached, ok := textures[path]; ok {

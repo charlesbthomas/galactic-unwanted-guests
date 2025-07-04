@@ -10,40 +10,44 @@ DEBUG :: true
 NUM_RAYS :: 100
 RAY_LENGTH :: 100
 
-main :: proc() {
+mk_collider :: proc(offset: Vec2, h: f32, w: f32) -> ^RectCollider {
+    col := new(RectCollider)
+    col^ = RectCollider {
+        offset = offset,
+        height = h,
+        width  = w,
+    }
+    return col
+}
+
+init :: proc() -> World {
     rl.InitWindow(1280, 720, "Raycasting Fun")
     rl.SetTargetFPS(60)
-
     world: World
 
     player_entity := Entity {
         is_player = true,
         pos       = Vec2{200, 200},
         tex       = load_texture("player.png"),
-        collider  = &RectCollider {
-            offset = Vec2{30, 36},
-            width = 65,
-            height = 73,
-        },
+        collider  = mk_collider(Vec2{30, 36}, 73, 65),
     }
     add_entity(&world, player_entity)
 
-    // add 4 boxes to the world
     for i in 0 ..< 4 {
         pos := Vec2{f32(i * 100 + 200), f32(i * 100 + 200)}
+        col := new(RectCollider)
         box := Entity {
             pos      = pos,
-            collider = &RectCollider {
-                offset = Vec2{0, 0},
-                width = 50,
-                height = 50,
-            },
+            collider = mk_collider(Vec2{0, 0}, 50, 50),
         }
-
-
         add_entity(&world, box)
     }
 
+    return world
+}
+
+main :: proc() {
+    world := init()
 
     for !rl.WindowShouldClose() {
         origin := rl.GetMousePosition()
@@ -73,7 +77,6 @@ main :: proc() {
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
-
 
         for e in world.entities {
             rl.DrawTextureV(e.tex, e.pos, rl.WHITE)
